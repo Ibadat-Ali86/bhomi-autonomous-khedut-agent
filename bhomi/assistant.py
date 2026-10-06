@@ -27,7 +27,13 @@ def route_intent(question: str, previous_intent: str | None = None) -> str:
     q = " ".join(question.lower().strip().split())
     if not q:
         return "unclear"
-    if _contains(q, (("દવા", "જંતુનાશક", "છંટકાવ", "ખાતર", "dosage", "dose", "pesticide", "fertilizer", "medicine", "chemical", "spray", "how much"),)):
+    if _contains(q, ((
+        "દવા", "જંતુનાશક", "ફૂગનાશક", "નીંદણનાશક", "છંટકાવ", "ખાતર", "યુરિયા", "ડી.એ.પી",
+        "દવાનો છંટકાવ", "માત્રા", "કેટલું ખાતર", "કેટલી દવા", "દવાનું નામ", "ઉપચાર",
+        "dosage", "dose", "pesticide", "fertilizer", "insecticide", "fungicide", "herbicide",
+        "medicine", "chemical", "spray", "spraying", "treatment", "how many ml",
+        "per acre", "per litre", "kill pests", "urea", "dap", "npk", "ml per", "gram per",
+    ),)):
         return "high_risk"
     if q in {"hi", "hey", "hello", "નમસ્તે", "kem cho", "namaste"} or _contains(q, (("નમસ્તે", "કેમ છો", "હેલો", "hello", "kem cho", "namaste", "hi "),)):
         return "greeting"

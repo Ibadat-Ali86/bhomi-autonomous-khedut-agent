@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import hashlib
 import html
+import os
 from io import BytesIO
 
 import streamlit as st
@@ -8,9 +10,17 @@ import streamlit as st
 from bhomi.assistant import Answer, answer_question
 from bhomi.config import APP_TITLE, ASSET_DIR, COLORS
 from bhomi.demo_data import DemoDataError, load_demo_data
+from bhomi.groq_vision import (
+    PhotoInputError,
+    VISION_MODEL_DEFAULT,
+    annotate_photo,
+    prepare_uploaded_photo,
+    review_crop_photo,
+)
 from bhomi.i18n import LEGACY_NAV, NAV_IDS, data_text, tr
+from bhomi.groq_ai import generate_groq_reply, groq_is_configured
 from bhomi.map_view import polygon_svg
-from bhomi.ui import card, speech_player
+from bhomi.ui import answer_text_for_display, card, speech_player
 from bhomi.voice import transcribe_locally
 
 
@@ -78,8 +88,8 @@ if st.session_state.page not in NAV_IDS:
 if "pending_page" in st.session_state:
     pending_page = st.session_state.pop("pending_page")
     st.session_state.page = LEGACY_NAV.get(pending_page, pending_page if pending_page in NAV_IDS else "farm")
-if "voice_transcript" not in st.session_state:
-    st.session_state.voice_transcript = ""
+st.session_state.setdefault("pending_voice", None)
+st.session_state.setdefault("chat_input_error", None)
 
 language = "en" if st.session_state.get("language", "ગુજરાતી") == "English" else "gu"
 farm = next((f for f in FARMS if f["id"] == st.session_state.field_id), FARMS[0])
@@ -112,9 +122,24 @@ st.markdown(f"<div class='hero'><div class='hero-eyebrow'>{eyebrow}</div><h1>{tr
 st.markdown(f"<div class='demo-banner'><strong>{'DEMO MODE' if language == 'en' else 'ડેમો મોડ'}</strong> · {tr('demo_banner', language).split(' · ', 1)[1]}</div>", unsafe_allow_html=True)
 
 
-def submit_question(question: str, input_mode: str = "text") -> Answer:
+def submit_question(question: str, input_mode: str = "text", answer_language: str | None = None) -> Answer:
+    answer_language = answer_language or language
     previous = next((m["intent"] for m in reversed(st.session_state.messages) if m["role"] == "assistant"), None)
     result = answer_question(question, farm, weather, price, alert, advisory, previous)
+    fallback_text = result.text_en if answer_language == "en" else result.text_gu
+    groq_reply = generate_groq_reply(
+        question=question,
+        language=answer_language,
+        intent=result.intent,
+        farm=farm,
+        weather=weather,
+        price=price,
+        alert=alert,
+        advisory=advisory,
+        fallback_text=fallback_text,
+        history=st.session_state.messages,
+    )
+    response_text = groq_reply.text if groq_reply.status == "ok" and groq_reply.text else fallback_text
     provenance = {
         "status": (advisory, "source_label", "as_of"),
         "irrigation": (weather, "source_label", "as_of"),
@@ -128,9 +153,28 @@ def submit_question(question: str, input_mode: str = "text") -> Answer:
     source_en = data_text(source_record, source_key, "en") if provenance else ("Safety guidance" if result.intent in {"photo", "high_risk"} else "")
     as_of_gu = source_record.get(date_key, result.as_of) if date_key else result.as_of
     as_of_en = data_text(source_record, date_key, "en") if date_key else None
+    assistant_message = {
+        "role": "assistant",
+        "text": response_text,
+        "text_gu": response_text if answer_language == "gu" else result.text_gu,
+        "text_en": response_text if answer_language == "en" else result.text_en,
+        "response_language": answer_language,
+        "engine": "groq" if groq_reply.status == "ok" else ("safety" if groq_reply.status == "safety_fallback" else "local"),
+        "engine_status": groq_reply.status,
+        "model": groq_reply.model,
+        "intent": result.intent,
+        "source": source_gu,
+        "source_en": source_en,
+        "as_of": as_of_gu,
+        "as_of_en": as_of_en,
+        "evidence": result.evidence,
+        "follow_up": result.follow_up,
+        "follow_up_en": result.follow_up_en,
+        "demo": result.is_demo,
+    }
     st.session_state.messages.extend([
-        {"role": "user", "text": question, "input_mode": input_mode},
-        {"role": "assistant", "text": result.text_gu, "text_gu": result.text_gu, "text_en": result.text_en, "intent": result.intent, "source": source_gu, "source_en": source_en, "as_of": as_of_gu, "as_of_en": as_of_en, "evidence": result.evidence, "follow_up": result.follow_up, "follow_up_en": result.follow_up_en, "demo": result.is_demo},
+        {"role": "user", "text": question, "input_mode": input_mode, "language": answer_language},
+        assistant_message,
     ])
     st.session_state.completed_steps.add("chat")
     return result
@@ -138,45 +182,159 @@ def submit_question(question: str, input_mode: str = "text") -> Answer:
 
 def render_answer(answer: dict, index: int) -> None:
     with st.chat_message(answer["role"]):
-        answer_text = answer.get(f"text_{language}", answer["text"])
+        response_language = answer.get("response_language", language)
+        answer_text = answer_text_for_display(answer, language)
         st.markdown(answer_text)
         if answer["role"] == "user" and answer.get("input_mode") == "voice":
-            st.caption("Voice transcript" if language == "en" else "અવાજમાંથી લખાણ")
+            input_language = answer.get("language", language)
+            st.caption("Voice transcript" if input_language == "en" else "અવાજમાંથી લખાણ")
         if answer["role"] == "assistant":
+            if answer.get("engine") == "groq":
+                engine_label = f"{tr('provider_groq', response_language)} · {answer.get('model', '')}"
+            elif answer.get("engine") == "safety":
+                engine_label = tr("provider_safety", language)
+            elif answer.get("engine_status") == "not_configured":
+                engine_label = tr("provider_local", language)
+            else:
+                engine_label = tr("provider_fallback", language)
+            st.caption(engine_label)
+            status_key = {
+                "rate_limited": "groq_status_rate_limited",
+                "invalid_key": "groq_status_invalid_key",
+                "connection_error": "groq_status_connection_error",
+                "provider_error": "groq_status_provider_error",
+                "empty_response": "groq_status_empty_response",
+                "language_mismatch": "groq_status_language_mismatch",
+            }.get(answer.get("engine_status"))
+            if status_key:
+                st.warning(tr(status_key, response_language))
             if answer.get("source"):
-                source_label = answer.get("source_en", answer["source"]) if language == "en" else answer["source"]
-                date = answer.get("as_of_en", answer.get("as_of")) if language == "en" else answer.get("as_of")
-                provenance = f"{source_label} · {date or ('General guidance' if language == 'en' else 'સામાન્ય માર્ગદર્શન')}"
-                st.caption(provenance + (" · Sample" if language == "en" and answer.get("demo") else (" · નમૂનો" if answer.get("demo") else "")))
-            follow_up = answer.get("follow_up_en", answer.get("follow_up")) if language == "en" else answer.get("follow_up")
+                source_label = answer.get("source_en", answer["source"]) if response_language == "en" else answer["source"]
+                date = answer.get("as_of_en", answer.get("as_of")) if response_language == "en" else answer.get("as_of")
+                provenance = f"{source_label} · {date or ('General guidance' if response_language == 'en' else 'સામાન્ય માર્ગદર્શન')}"
+                st.caption(provenance + (" · Sample" if response_language == "en" and answer.get("demo") else (" · નમૂનો" if answer.get("demo") else "")))
+            follow_up = answer.get("follow_up_en", answer.get("follow_up")) if response_language == "en" else answer.get("follow_up")
             if follow_up:
                 st.caption(("Next: " if language == "en" else "આગળ: ") + follow_up)
-            speech_player(answer_text, f"speech-{index}", language)
+            speech_player(answer_text, f"speech-{index}", response_language)
+
+
+def retry_pending_voice_transcription() -> None:
+    pending = st.session_state.get("pending_voice")
+    if not pending or not pending.get("audio_bytes"):
+        return
+    result = transcribe_locally(pending["audio_bytes"], pending.get("selected_language", pending["language"]))
+    pending["transcript"] = result.text or ""
+    pending["state"] = result.state
+    pending["language"] = result.language
+    pending["language_detected"] = result.language_detected
+    pending["revision"] = pending.get("revision", 0) + 1
+    st.session_state.pending_voice = pending
+
+
+def discard_pending_voice() -> None:
+    st.session_state.pending_voice = None
 
 
 def show_photo_view():
     st.markdown(f"## {tr('photo_title', language)}")
     st.caption(tr("photo_description", language))
     case = st.selectbox(tr("demo_case", language), DATA["crop_cases"], format_func=lambda item: data_text(item, "title_gu", language), key="crop_case")
-    uploaded = st.file_uploader(tr("optional_upload", language), type=["jpg", "jpeg", "png", "webp"], help=tr("upload_help", language))
+    uploaded = st.file_uploader(
+        tr("optional_upload", language),
+        type=["jpg", "jpeg", "png", "webp"],
+        help=tr("upload_help", language),
+        key="crop_upload",
+    )
     cols = st.columns(2)
     with cols[0]:
-        st.image(str(ASSET_DIR / case["image"]), caption=data_text(case, "title_gu", language), width="stretch")
+        st.image(
+            str(ASSET_DIR / case["image"]),
+            caption=data_text(case, "title_gu", language),
+            width="stretch",
+            alt=data_text(case, "title_gu", language),
+        )
+
+    prepared_photo = None
+    photo_digest = None
     with cols[1]:
         if uploaded:
             try:
+                image_bytes = uploaded.getvalue()
+                crop_name = data_text(farm, "crop_gu", language)
+                vision_model = os.getenv("GROQ_VISION_MODEL", VISION_MODEL_DEFAULT).strip() or VISION_MODEL_DEFAULT
+                digest_context = f"{language}\0{crop_name}\0{vision_model}\0".encode("utf-8")
+                photo_digest = hashlib.sha256(digest_context + image_bytes).hexdigest()
+                prepared_photo = prepare_uploaded_photo(image_bytes)
                 from PIL import Image
-                image = Image.open(BytesIO(uploaded.getvalue()))
-                if image.width * image.height > 20_000_000:
+                image = Image.open(BytesIO(prepared_photo.jpeg_bytes))
+                st.image(
+                    image,
+                    caption=tr("upload_preview", language),
+                    width="stretch",
+                    alt=tr("upload_preview", language),
+                )
+            except PhotoInputError as exc:
+                if str(exc) in {"too_large", "too_many_pixels"}:
                     st.warning(tr("image_too_large", language))
                 else:
-                    st.image(image, caption=tr("upload_preview", language), width="stretch")
+                    st.warning(tr("image_invalid", language))
             except Exception:
                 st.warning(tr("image_invalid", language))
         else:
             st.markdown(f"<div class='step'>{tr('upload_unavailable', language)}</div>", unsafe_allow_html=True)
-    st.info(f"**{tr('sample_triage', language)}:** {data_text(case, 'result_gu', language)}\n\n{tr('low_confidence', language)}")
-    st.caption(f"{data_text(case, 'source_label', language)} · {tr('demo_seen', language)}")
+
+    if prepared_photo and photo_digest:
+        st.info(tr("photo_privacy_notice", language), icon=":material/lock:")
+        is_configured = groq_is_configured()
+        if not is_configured:
+            st.warning(tr("photo_not_configured", language))
+
+        stored_review = st.session_state.get("crop_photo_review", {})
+        review = stored_review.get("reply") if stored_review.get("digest") == photo_digest else None
+        if st.button(
+            tr("photo_analyze", language),
+            key="analyze_crop_photo",
+            type="primary",
+            icon=":material/search:",
+            disabled=not is_configured or bool(review and review.status == "ok"),
+        ):
+            with st.spinner(tr("photo_analyzing", language)):
+                review = review_crop_photo(prepared_photo, language, crop_name)
+            st.session_state.crop_photo_review = {"digest": photo_digest, "reply": review}
+
+        if review:
+            if review.status != "ok":
+                st.warning(tr(f"photo_error_{review.status}", language))
+            else:
+                st.markdown(f"### {tr('photo_result_title', language)}")
+                if review.is_crop:
+                    if review.regions:
+                        marked_image = annotate_photo(prepared_photo, review.regions)
+                        st.image(
+                            marked_image,
+                            caption=tr("photo_result_title", language),
+                            width="stretch",
+                            alt=tr("photo_result_title", language),
+                        )
+                        label_keys = {
+                            "healthy_looking": "photo_healthy_region",
+                            "concerning": "photo_concerning_region",
+                            "unclear": "photo_unclear_region",
+                        }
+                        for index, region in enumerate(review.regions, start=1):
+                            st.text(f"{index} · {tr(label_keys[region.label], language)}: {region.observation}")
+                    else:
+                        st.caption(tr("photo_no_regions", language))
+                    st.info(review.summary)
+                else:
+                    st.info(tr("photo_not_crop", language))
+                    st.caption(review.summary)
+                st.caption(f"{review.model} · {tr('photo_footer', language)}")
+    else:
+        st.info(f"**{tr('sample_triage', language)}:** {data_text(case, 'result_gu', language)}\n\n{tr('low_confidence', language)}")
+        st.caption(f"{data_text(case, 'source_label', language)} · {tr('demo_seen', language)}")
+
     if st.button(tr("photo_done", language), type="primary"):
         st.session_state.completed_steps.add("photo")
         st.success(tr("step_done", language))
@@ -223,33 +381,107 @@ if page == "farm":
 elif page == "chat":
     st.markdown(f"## {tr('chat_title', language)}")
     st.caption(tr("chat_description", language))
+    if groq_is_configured():
+        st.success(tr("groq_ready", language), icon=":material/auto_awesome:")
+    else:
+        st.info(tr("groq_preview", language), icon=":material/info:")
     if st.session_state.messages and st.button(tr("clear_chat", language), icon=":material/delete_sweep:"):
         st.session_state.messages = []
+        st.session_state.pending_voice = None
         st.rerun()
     if not st.session_state.messages:
         st.info(tr("chat_example", language))
     for idx, message in enumerate(st.session_state.messages):
         render_answer(message, idx)
+
+    pending_voice = st.session_state.pending_voice
+    if st.session_state.chat_input_error:
+        st.error(tr(st.session_state.chat_input_error, language))
+    if pending_voice:
+        st.markdown(f"### {tr('voice_review_title', language)}")
+        st.caption(tr("voice_review_help", language))
+        audio_bytes = pending_voice.get("audio_bytes", b"")
+        if audio_bytes:
+            st.audio(
+                audio_bytes,
+                format="audio/wav",
+                alt=tr("voice_audio_alt", language),
+            )
+            shown_language = "English" if pending_voice["language"] == "en" else "ગુજરાતી"
+            language_status = tr("voice_detected_language", language) if pending_voice.get("language_detected") else tr("voice_selected_language", language)
+            st.caption(f"{len(audio_bytes):,} bytes · {language_status}: {shown_language}")
+        if pending_voice["state"] != "ready":
+            st.error(tr(f"voice_{pending_voice['state']}", language))
+        review_version = f"{pending_voice['recording_id']}:{pending_voice.get('revision', 0)}"
+        if st.session_state.get("voice_review_version") != review_version:
+            st.session_state.voice_review_text = pending_voice.get("transcript", "")
+            st.session_state.voice_review_version = review_version
+        st.text_area(
+            tr("voice_review_label", language),
+            key="voice_review_text",
+            max_chars=2000,
+            height=100,
+        )
+        action_cols = st.columns([1, 1, 1.5])
+        with action_cols[0]:
+            if st.button(
+                tr("voice_send", language),
+                key="voice_send_confirmed",
+                type="primary",
+                disabled=not st.session_state.voice_review_text.strip(),
+            ):
+                confirmed_question = st.session_state.voice_review_text.strip()
+                confirmed_language = pending_voice["language"]
+                st.session_state.pending_voice = None
+                submit_question(confirmed_question, "voice", confirmed_language)
+                st.rerun()
+        with action_cols[1]:
+            if st.button(tr("voice_discard", language), key="voice_discard_recording"):
+                discard_pending_voice()
+                st.rerun()
+        with action_cols[2]:
+            if pending_voice.get("audio_bytes") and st.button(
+                tr("voice_retry", language),
+                key="voice_retry_transcription",
+                on_click=retry_pending_voice_transcription,
+                disabled=pending_voice["state"] == "ready",
+            ):
+                pass
+
     st.caption(tr("voice_footer", language))
     prompt = st.chat_input(
         tr("chat_placeholder", language),
         accept_audio=True,
         audio_sample_rate=16000,
+        max_chars=2000,
+        disabled=bool(pending_voice),
         key="assistant_composer",
     )
     if prompt:
         question = prompt.text.strip()
-        input_mode = "text"
-        if prompt.audio:
+        if prompt.audio and question:
+            st.session_state.chat_input_error = "voice_text_and_audio"
+            st.rerun()
+        elif prompt.audio:
+            st.session_state.chat_input_error = None
+            audio_bytes = prompt.audio.getvalue()
+            recording_id = hashlib.sha256(audio_bytes).hexdigest()
             with st.spinner(tr("transcribing", language)):
-                transcript, state = transcribe_locally(prompt.audio.getvalue(), language)
-            if transcript:
-                question = transcript
-                input_mode = "voice"
-            elif not question:
-                st.error(tr(f"voice_{state}", language))
-        if question:
-            submit_question(question, input_mode)
+                result = transcribe_locally(audio_bytes, language)
+            st.session_state.pending_voice = {
+                "recording_id": recording_id,
+                "audio_bytes": audio_bytes,
+                "language": result.language,
+                "selected_language": language,
+                "language_detected": result.language_detected,
+                "transcript": result.text or "",
+                "state": result.state,
+                "revision": 0,
+            }
+            st.rerun()
+        elif question:
+            st.session_state.chat_input_error = None
+            submit_question(question, answer_language=language)
             st.rerun()
 elif page == "photo":
     show_photo_view()

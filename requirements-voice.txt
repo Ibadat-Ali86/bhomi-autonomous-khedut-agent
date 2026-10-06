@@ -1,2 +1,5 @@
 # Optional speech-to-text support for microphone questions.
 faster-whisper>=1.1,<2.0
+# faster-whisper versions currently used here call av.open(metadata_errors=...),
+# which PyAV 19 removed. Keep the decoder on its compatible API for this app.
+av>=11,<19

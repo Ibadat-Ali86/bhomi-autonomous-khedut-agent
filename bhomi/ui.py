@@ -1,8 +1,19 @@
 """Shared view helpers for cards, data provenance and Gujarati speech playback."""
+import hashlib
 import html
-import json
 
 import streamlit as st
+from bhomi.tts import SpeechGenerationError, synthesize_reply
+
+
+def answer_text_for_display(answer: dict, language: str) -> str:
+    """Choose message text while tolerating older session-state shapes."""
+    response_language = answer.get("response_language")
+    preferred_language = response_language if answer.get("role") == "assistant" and response_language in {"gu", "en"} else language
+    for candidate in (answer.get(f"text_{preferred_language}"), answer.get("text"), answer.get("text_gu"), answer.get("text_en")):
+        if isinstance(candidate, str) and candidate.strip():
+            return candidate
+    return ""
 
 
 def card(title: str, value: str, detail: str, label: str = "નમૂના ડેટા", tone: str = "green") -> None:
@@ -15,32 +26,31 @@ def card(title: str, value: str, detail: str, label: str = "નમૂના ડ�
 
 
 def speech_player(text: str, key: str, language: str = "gu") -> None:
-    safe_text = json.dumps(text, ensure_ascii=False)
-    locale = "en-IN" if language == "en" else "gu-IN"
-    button_text = "Listen to reply" if language == "en" else "જવાબ સાંભળો"
-    available = "Tap to hear this reply in English." if language == "en" else "જવાબ ગુજરાતીમાં સાંભળવા અહીં દબાવો."
-    unsupported = "Speech playback is unavailable in this browser." if language == "en" else "આ બ્રાઉઝરમાં અવાજ ઉપલબ્ધ નથી."
-    unavailable = "No compatible English voice is available on this device." if language == "en" else "આ ઉપકરણમાં ગુજરાતી અવાજ ઉપલબ્ધ નથી."
-    playing = "Playing reply in English." if language == "en" else "ગુજરાતીમાં જવાબ વગાડી રહ્યો છે."
-    st.iframe(f'''<!doctype html><meta charset="utf-8">
-      <button id="play" data-instance="{html.escape(key, quote=True)}" aria-label="{html.escape(button_text, quote=True)}">🔊 {html.escape(button_text)}</button>
-      <span id="status" aria-live="polite">{html.escape(available)}</span>
-      <script>
-      const text = {safe_text};
-      const btn = document.getElementById('play');
-      const status = document.getElementById('status');
-      btn.onclick = () => {{
-        if (!('speechSynthesis' in window)) {{ status.textContent = '{unsupported}'; return; }}
-        const speak = () => {{
-          const voices = speechSynthesis.getVoices();
-          const voice = voices.find(v => v.lang.toLowerCase() === '{locale.lower()}') || voices.find(v => v.lang.toLowerCase().startsWith('{language}'));
-          if (!voice) {{ status.textContent = '{unavailable}'; return; }}
-          speechSynthesis.cancel(); const utterance = new SpeechSynthesisUtterance(text);
-          utterance.lang = '{locale}'; utterance.voice = voice; utterance.rate = 0.96;
-          utterance.onerror = () => {{ status.textContent = '{unsupported}'; }};
-          speechSynthesis.speak(utterance); status.textContent = '{playing}';
-        }};
-        if (speechSynthesis.getVoices().length) speak();
-        else {{ status.textContent = 'Loading voice…'; speechSynthesis.onvoiceschanged = speak; }}
-      }};
-      </script><style>body{{font:13px sans-serif;color:#26342b;margin:4px;display:flex;align-items:center;flex-wrap:wrap;gap:8px}}button{{padding:9px 14px;border:1px solid #cbd4c2;border-radius:12px;background:#e7eedc;color:#26342b;cursor:pointer;font:600 13px sans-serif}}button:hover{{background:#dbe7cc}}#status{{color:#667267}}</style>''', height=58, tab_index=0, alt=button_text)
+    language = language if language in {"gu", "en"} else "gu"
+    digest = hashlib.sha256(f"{language}\0{text}".encode("utf-8")).hexdigest()[:20]
+    audio_cache = st.session_state.setdefault("reply_audio_cache", {})
+    button_label = "Generate reply audio" if language == "en" else "જવાબનો અવાજ બનાવો"
+    consent_note = (
+        "When you generate audio, this reply text is sent to Microsoft's online speech service."
+        if language == "en"
+        else "અવાજ બનાવવા માટે આ જવાબનું લખાણ Microsoftની ઑનલાઇન સ્પીચ સેવા પાસે મોકલાશે."
+    )
+    with st.container(key=f"speech_{key}"):
+        audio = audio_cache.get(digest)
+        if audio is None:
+            st.caption(consent_note)
+            if st.button(button_label, key=f"generate_{key}", icon="🔊"):
+                try:
+                    with st.spinner("Generating Gujarati audio…" if language == "gu" else "Generating English audio…"):
+                        audio = synthesize_reply(text, language)
+                    audio_cache[digest] = audio
+                    while len(audio_cache) > 5:
+                        audio_cache.pop(next(iter(audio_cache)))
+                except (SpeechGenerationError, ValueError):
+                    st.warning(
+                        "અવાજ બનાવી શકાયો નથી. ઇન્ટરનેટ જોડાણ તપાસીને ફરી પ્રયાસ કરો."
+                        if language == "gu"
+                        else "Could not generate audio. Check the internet connection and try again."
+                    )
+        if audio is not None:
+            st.audio(audio, format="audio/mp3", autoplay=False, alt="Gujarati assistant reply" if language == "gu" else "English assistant reply")
