@@ -1,0 +1,106 @@
+"""Small, reviewed UI copy set. Gujarati remains the default product language."""
+
+COPY = {
+    "sidebar_tagline": ("ગુજરાતી ખેડૂત સહાયક · લોકલ ડેમો", "Gujarati farm assistant · local demo"),
+    "language": ("ભાષા / Language", "Language / ભાષા"),
+    "language_note": ("ગુજરાતી મુખ્ય ભાષા · English વૈકલ્પિક ભાષા", "Gujarati primary · English secondary"),
+    "farmer": ("નમૂના ખેડૂત", "Sample farmer"),
+    "select_field": ("ખેતર પસંદ કરો", "Select a field"),
+    "navigation": ("મુખ્ય વિભાગ", "Main navigation"),
+    "privacy": ("અવાજ આ ડેમો સર્વર પર જ ટ્રાન્સક્રાઇબ થાય છે; કોઈ third-party speech API વપરાતી નથી. આ વાસ્તવિક કૃષિ સેવા નથી.", "Voice is transcribed by this demo server; no third-party speech API is used. This is not a live farm service."),
+    "greeting": ("નમસ્તે", "Welcome"),
+    "assistant_tagline": ("સરળ ગુજરાતી સહાય", "A simpler way to get farm guidance"),
+    "demo_banner": ("ડેમો મોડ · નીચેના ખેતર, હવામાન, ભાવ, ચેતવણી અને ફોટા બધાં કલ્પિત ઉદાહરણો છે. વાસ્તવિક પાક નિર્ણય પહેલાં સ્થાનિક નિષ્ણાતની સલાહ લો.", "DEMO MODE · Farm, weather, price, alert, and photo examples below are fictional. Check with a local agriculture expert before acting on crop advice."),
+    "field_status": ("ખેતરની હાલત", "Field overview"),
+    "crop": ("પાક", "Crop"),
+    "area": ("વિસ્તાર", "Area"),
+    "sample_area": ("કલ્પિત ક્ષેત્રફળ", "Illustrative area"),
+    "weather": ("હવામાન", "Weather"),
+    "irrigation_cue": ("પાણીનો સંકેત", "Irrigation cue"),
+    "check_first": ("પહેલાં તપાસો", "Check before watering"),
+    "soil_not_measured": ("માટી ભેજ માપેલી નથી", "Soil moisture has not been measured"),
+    "field_map": ("ખેતરનો નકશો", "Field map"),
+    "map_disclaimer": ("આ માત્ર કલ્પિત આકાર છે; GPS સ્થાન કે સર્વે કરેલી સીમા નથી.", "Illustrative shape only; this is not GPS data or a surveyed boundary."),
+    "mark_map_seen": ("નકશો અને ખેતરની માહિતી જોઈ", "Mark field and map as viewed"),
+    "map_done": ("નકશો જોવાનો અભ્યાસ પૂરું થયું.", "Field map step complete."),
+    "today_cue": ("આજનો સંકેત", "Today's cue"),
+    "why_cue": ("શા માટે આ સંકેત?", "Why this cue?"),
+    "understood": ("કારણ સમજાયું", "I understand the reason"),
+    "alert": ("ચેતવણી", "Alert"),
+    "recent_activity": ("તાજેતરની ખેતર નોંધ", "Recent field note"),
+    "sample_price": ("મંડીનો નમૂનો", "Sample market price"),
+    "price_unit": ("પ્રતિ ક્વિન્ટલ", "per quintal"),
+    "sources_seen": ("હવામાન, ભાવ અને ચેતવણી જોઈ", "Mark weather, price, and alert as viewed"),
+    "sources_done": ("સ્ત્રોત જોવાનો અભ્યાસ પૂરું થયું.", "Source review step complete."),
+    "quick_questions": ("ઝડપી સવાલ", "Quick questions"),
+    "prompt_status": ("આજે મારા ખેતરમાં શું કરવું?", "What should I do in my field today?"),
+    "prompt_water": ("માટી સૂકી લાગે છે, પાણી આપું?", "The soil looks dry. Should I irrigate?"),
+    "prompt_weather": ("આવતીકાલનું હવામાન શું છે?", "What is tomorrow's weather?"),
+    "prompt_price": ("કપાસનો મંડી ભાવ કેટલો?", "What is the sample cotton market price?"),
+    "chat_title": ("તમારા ખેતર વિશે પૂછો", "Ask about your field"),
+    "chat_description": ("જવાબો સ્થાનિક JSON નમૂનાઓ અને સ્થિર ગુજરાતી ટેમ્પલેટ પરથી આવે છે; અહીં કોઈ cloud AI જોડાયેલું નથી.", "Answers use local sample records and reviewed templates. No cloud AI is connected."),
+    "chat_example": ("નીચે લખો અથવા માઇક્રોફોન દબાવીને ગુજરાતીમાં બોલો. જવાબ આવ્યા પછી અવાજ ચિહ્ન દબાવીને સાંભળો.", "Type below or tap the microphone and speak in English or Gujarati. Tap the speaker under a reply to hear it."),
+    "chat_placeholder": ("ગુજરાતીમાં સવાલ લખો…", "Ask a question in English or Gujarati…"),
+    "voice_footer": ("માઇક્રોફોનથી બોલેલો સવાલ આ ડેમો સર્વર પર ટ્રાન્સક્રાઇબ થાય છે. જવાબ સાંભળવા speaker બટન દબાવો; ગુજરાતી અવાજ તમારા બ્રાઉઝરમાં ઉપલબ્ધ હોવો જરૂરી છે.", "Voice questions are transcribed by this demo server. Tap the speaker under a reply to hear it; a compatible voice must be available in your browser."),
+    "clear_chat": ("વાતચીત સાફ કરો", "Clear conversation"),
+    "photo_title": ("પાકના ફોટાની સાવચેતીપૂર્વક તપાસ", "Careful crop photo review"),
+    "photo_description": ("આ પાનું ફોટો ઓળખતું નથી. અપલોડ કરેલી તસવીર ફક્ત તમારા બ્રાઉઝર/આ ડેમો પાનામાં preview માટે છે; કોઈ મોડેલને મોકલાતી નથી.", "This demo does not identify crop conditions from photos. An uploaded image is previewed locally and is not sent to a model."),
+    "demo_case": ("ડેમો ઉદાહરણ પસંદ કરો", "Choose a sample case"),
+    "optional_upload": ("તમારો ફોટો (વૈકલ્પિક preview)", "Your photo (optional preview)"),
+    "upload_help": ("આ પ્રોટોટાઇપ અપલોડ પરથી રોગ ઓળખતું નથી.", "This prototype does not diagnose disease from uploads."),
+    "upload_preview": ("તમારો સ્થાનિક preview · વિશ્લેષણ કરેલું નથી", "Local preview · not analyzed"),
+    "upload_unavailable": ("અપલોડ ન કરવો હોય તો ડેમો કેસથી પ્રક્રિયા જુઓ.", "Skip the upload and use a sample case to preview the flow."),
+    "image_too_large": ("આ ડેમો માટે આ ચિત્ર બહુ મોટું છે. ૨૦ મેગાપિક્સેલથી નાનું ચિત્ર પસંદ કરો.", "This image is too large for the demo. Choose one under 20 megapixels."),
+    "image_invalid": ("આ ચિત્ર preview થઈ શક્યું નથી. JPG, PNG અથવા WEBP ફરી પસંદ કરો.", "Could not preview this image. Choose a JPG, PNG, or WEBP file."),
+    "sample_triage": ("નમૂના triage", "Sample review"),
+    "low_confidence": ("વિશ્વાસ: ઓછો · આ નિદાન નથી · દવા/માત્રા સૂચવાતી નથી.", "Confidence: low · not a diagnosis · no pesticide or dosage advice."),
+    "photo_done": ("ફોટો તપાસનો ડેમો જોયો", "Mark photo demo as viewed"),
+    "step_done": ("આ પગલું પૂરું થયું.", "Step complete."),
+    "guide_title": ("ચાલો, BHOMI ડેમો અજમાવીએ", "Try the BHOMI demo"),
+    "guide_description": ("પાંચ નાનાં પગલાંમાં જુઓ કે નમૂના ખેતર, સહાયક અને માહિતીના સ્ત્રોત કેવી રીતે જોડાય છે.", "Follow five short steps to see how the sample farm, assistant, and data sources fit together."),
+    "guide_skipped": ("પ્રેક્ટિસ છોડાઈ. ડાબી બાજુથી કોઈપણ વિભાગ ખોલો; ફરી શરૂ કરવા નીચેનું બટન વાપરો.", "Practice skipped. Choose a section from the sidebar, or restart below."),
+    "step_chat": ("વાત કરો", "Ask a question"),
+    "step_chat_detail": ("લખીને અથવા માઇક્રોફોનથી સવાલ પૂછો અને જવાબ સાંભળો.", "Ask by typing or using the microphone, then listen to the reply."),
+    "step_field": ("ખેતર જુઓ", "Explore the field"),
+    "step_field_detail": ("ખેતર પસંદ કરો અને તેની કલ્પિત સીમા જુઓ.", "Select a sample field and inspect its illustrative boundary."),
+    "step_status": ("કારણ સમજો", "Understand the reason"),
+    "step_status_detail": ("આજના સંકેત પાસે “શા માટે?” ખોલો.", "Open “Why this cue?” beside today's field guidance."),
+    "step_photo": ("ફોટો તપાસ", "Review a photo"),
+    "step_photo_detail": ("ડેમો પાનનો કેસ જુઓ; આ રોગ નિદાન નથી.", "View an illustrated leaf case; it is not a disease diagnosis."),
+    "step_sources": ("સ્ત્રોત ચકાસો", "Check the sources"),
+    "step_sources_detail": ("હવામાન, મંડીભાવ અને ચેતવણી પરની તારીખ/નમૂનો નોંધો.", "Check the sample labels and dates on weather, price, and alert data."),
+    "open_step": ("આ પગલું ખોલો", "Open this step"),
+    "completed": ("પૂર્ણ", "Complete"),
+    "progress": ("પગલાં પૂરાં", "steps complete"),
+    "skip_practice": ("આ પ્રેક્ટિસ છોડો", "Skip practice"),
+    "restart": ("ફરીથી શરૂ કરો", "Start again"),
+    "nav_farm": ("ખેતર", "Farm"),
+    "nav_chat": ("વાતચીત", "Assistant"),
+    "nav_photo": ("ફોટો તપાસ", "Photo review"),
+    "nav_guide": ("શરૂઆત", "Practice guide"),
+    "card_sample": ("નમૂના ડેટા", "Sample data"),
+    "transcribing": ("અવાજને લખાણમાં ફેરવી રહ્યો છું…", "Transcribing your recording…"),
+    "voice_disabled": ("સ્થાનિક વાણી ઓળખ બંધ છે. લખાણથી સવાલ મોકલો.", "Local voice recognition is turned off. Type your question instead."),
+    "voice_missing_dependency": ("વાણી ઓળખ શરૂ કરવા requirements-voice.txt ઇન્સ્ટોલ કરો; અથવા લખીને સવાલ પૂછો.", "Voice recognition needs the optional packages in requirements-voice.txt. You can also type your question."),
+    "voice_empty_audio": ("અવાજ સ્પષ્ટ મળ્યો નથી. ફરી રેકોર્ડ કરો અથવા લખીને પૂછો.", "No clear audio was received. Record again or type your question."),
+    "voice_audio_too_large": ("રેકોર્ડિંગ ઘણું મોટું છે. ટૂંકો અવાજ રેકોર્ડ કરો.", "That recording is too large. Please record a shorter question."),
+    "voice_no_transcript": ("અવાજ સમજાયો નથી. ફરીથી બોલો અથવા લખીને સવાલ પૂછો.", "I couldn't make out the recording. Try again or type your question."),
+    "voice_transcription_failed": ("અવાજ લખાણમાં ફેરવી શકાયો નથી. ફરી પ્રયાસ કરો અથવા લખીને પૂછો.", "The recording could not be transcribed. Try again or type your question."),
+    "demo_seen": ("સ્થાનિક કલ્પિત કેસ", "Local illustrative case"),
+}
+
+
+NAV_IDS = ("farm", "chat", "photo", "guide")
+LEGACY_NAV = {"ખેતર": "farm", "વાતચીત": "chat", "ફોટો તપાસ": "photo", "શરૂઆત": "guide"}
+
+
+def tr(key: str, language: str = "gu") -> str:
+    gu, en = COPY[key]
+    return en if language == "en" else gu
+
+
+def data_text(record: dict, key: str, language: str = "gu") -> str:
+    if language != "en":
+        return record[key]
+    base = key[:-3] if key.endswith("_gu") else key
+    return record.get(f"{base}_en", record[key])

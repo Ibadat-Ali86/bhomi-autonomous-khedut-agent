@@ -1,0 +1,28 @@
+# Python environments and generated files
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Local secrets and Streamlit credentials
+.env
+.env.*
+!.env.example
+.streamlit/secrets.toml
+
+# Local tooling, caches, and OS files
+.agents/
+.cache/
+.DS_Store
+Thumbs.db
+__pycache__/
+.pytest_cache/
+.streamlit/secrets.toml
+.env
+*.py[cod]

@@ -1,0 +1,4 @@
+[
+  {"field_id":"cotton","summary_gu":"આવતીકાલે હળવો વરસાદ — નમૂનાનો અંદાજ","summary_en":"Light rain tomorrow — sample outlook","rain_mm":4,"temp_c":29,"source_label":"કલ્પિત હવામાન નમૂનો","source_label_en":"Illustrative weather sample","as_of":"૨૦૨૬-૧૦-૦૬ ૦૮:૦૦ IST","as_of_en":"Oct 6, 2026 · 8:00 AM IST","is_demo":true,"why_gu":"વરસાદનો આંકડો ડેમો માટે બનાવેલો છે; સ્થાનિક વાસ્તવિક આગાહી નથી.","why_en":"Rain values are invented for the demo and are not a local forecast."},
+  {"field_id":"wheat","summary_gu":"આવતીકાલે વાદળછાયું — નમૂનાનો અંદાજ","summary_en":"Cloudy tomorrow — sample outlook","rain_mm":1,"temp_c":28,"source_label":"કલ્પિત હવામાન નમૂનો","source_label_en":"Illustrative weather sample","as_of":"૨૦૨૬-૧૦-૦૬ ૦૮:૦૦ IST","as_of_en":"Oct 6, 2026 · 8:00 AM IST","is_demo":true,"why_gu":"વરસાદનો આંકડો ડેમો માટે બનાવેલો છે; સ્થાનિક વાસ્તવિક આગાહી નથી.","why_en":"Rain values are invented for the demo and are not a local forecast."}
+]

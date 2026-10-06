@@ -1,0 +1,4 @@
+[
+  {"id":"healthy","title_gu":"સામાન્ય દેખાતું પાન (કલ્પિત ચિત્ર)","title_en":"Healthy-looking leaf (illustration)","image":"demo_leaf.svg","result_gu":"આ ડેમો ચિત્રમાં સ્પષ્ટ ડાઘ દેખાતા નથી. આથી આખા પાકનું સ્વાસ્થ્ય નક્કી થતું નથી.","result_en":"No clear spots appear in this illustration. It cannot establish the health of an entire crop.","confidence":"low","source_label":"સ્થાનિક ડેમો કેસ","source_label_en":"Local demo case","is_demo":true},
+  {"id":"spots","title_gu":"અસ્પષ્ટ પાનના ડાઘ (કલ્પિત ચિત્ર)","title_en":"Unclear leaf spots (illustration)","image":"demo_leaf_spots.svg","result_gu":"પાન પર ડાઘ દેખાય છે, પરંતુ એક ચિત્રથી રોગ પાકો કહી શકાતો નથી. આખા છોડનો અને પાનની નીચેનો સ્પષ્ટ ફોટો લો.","result_en":"Spots are shown, but one image cannot confirm a disease. Take a clear photo of the whole plant and the underside of the leaf.","confidence":"low","source_label":"સ્થાનિક ડેમો કેસ","source_label_en":"Local demo case","is_demo":true}
+]

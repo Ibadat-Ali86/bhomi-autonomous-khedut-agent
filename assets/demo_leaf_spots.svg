@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 380" role="img" aria-label="Illustrative leaf with sample spots">
+  <rect width="600" height="380" rx="24" fill="#edf1e6"/><path d="M0 300Q140 260 285 304T600 270V380H0Z" fill="#dce8d1"/>
+  <path d="M146 290C106 188 204 69 453 54c-3 196-128 284-307 236Z" fill="#7c9a5c" stroke="#4f6f3a" stroke-width="8"/>
+  <path d="M148 293Q280 185 439 68M225 230l-44-87m102 34-5-91m13 147 97 4m-143 35 112 44" fill="none" stroke="#c8dbad" stroke-width="7" stroke-linecap="round"/>
+  <ellipse cx="274" cy="174" rx="19" ry="12" fill="#ad8650"/><ellipse cx="335" cy="225" rx="14" ry="10" fill="#aa8351"/><ellipse cx="230" cy="231" rx="11" ry="8" fill="#b28d5c"/>
+</svg>

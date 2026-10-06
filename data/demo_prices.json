@@ -1,0 +1,4 @@
+[
+  {"crop_gu":"કપાસ","crop_en":"Cotton","market_gu":"વિસનગર (નમૂનો)","market_en":"Visnagar (sample)","price_rupees_per_quintal":7200,"source_label":"કલ્પિત મંડી નમૂનો","source_label_en":"Illustrative market sample","as_of":"૨૦૨૬-૧૦-૦૪","as_of_en":"Oct 4, 2026","is_demo":true},
+  {"crop_gu":"ઘઉં","crop_en":"Wheat","market_gu":"ઊંઝા (નમૂનો)","market_en":"Unjha (sample)","price_rupees_per_quintal":2650,"source_label":"કલ્પિત મંડી નમૂનો","source_label_en":"Illustrative market sample","as_of":"૨૦૨૬-૧૦-૦૪","as_of_en":"Oct 4, 2026","is_demo":true}
+]

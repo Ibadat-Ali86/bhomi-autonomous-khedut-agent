@@ -1,0 +1,4 @@
+[
+  {"field_id":"cotton","title_gu":"વરસાદ પહેલાં ખેતર ચકાસો","title_en":"Check the field before rain","reason_gu":"નમૂનાના હવામાનમાં હળવો વરસાદ બતાવ્યો છે. પાણી આપતા પહેલાં જમીનની ભેજ જાતે તપાસો.","reason_en":"The sample outlook shows light rain. Check soil moisture before irrigating.","source_label":"ડેમો ચેતવણી","source_label_en":"Demo alert","as_of":"૨૦૨૬-૧૦-૦૫","as_of_en":"Oct 5, 2026","is_demo":true},
+  {"field_id":"wheat","title_gu":"પાકની સ્થિતિ નોંધો","title_en":"Record the crop condition","reason_gu":"આ ફૂલ અવસ્થાના ડેમો ખેતર માટે સામાન્ય નિરીક્ષણ યાદ અપાવ્યું છે.","reason_en":"A routine observation reminder for this illustrative wheat field at flowering stage.","source_label":"ડેમો ચેતવણી","source_label_en":"Demo alert","as_of":"૨૦૨૬-૧૦-૦૫","as_of_en":"Oct 5, 2026","is_demo":true}
+]
